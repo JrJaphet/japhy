@@ -1,0 +1,47 @@
+name: japhy_app
+description: A simple to-do app with calendar, search, add, and delete functionality.
+
+publish_to: 'none' # This prevents accidental publishing to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.2.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  provider: ^6.1.0
+
+  # Calendar and date formatting
+  table_calendar: ^3.0.9
+  intl: ^0.18.1
+
+  # 🔥 Firebase dependencies (updated)
+  firebase_core: ^2.25.4
+  firebase_auth: ^4.16.4
+
+  # User feedback
+  fluttertoast: ^8.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+  flutter_launcher_icons: ^0.13.1
+
+dependency_overrides:
+  firebase_auth_web: 5.11.2
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/icon/app_icon.png
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon.png"
