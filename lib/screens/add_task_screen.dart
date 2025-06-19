@@ -1,120 +1,104 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:timezone/data/latest.dart' as tz;
-
+import 'package:uuid/uuid.dart';
 import '../models/task.dart';
 
 class AddTaskScreen extends StatefulWidget {
   final Task? existingTask;
 
-  const AddTaskScreen({Key? key, this.existingTask}) : super(key: key);
+  const AddTaskScreen({super.key, this.existingTask});
 
   @override
   State<AddTaskScreen> createState() => _AddTaskScreenState();
 }
 
 class _AddTaskScreenState extends State<AddTaskScreen> {
+  final _formKey = GlobalKey<FormState>();
   late TextEditingController _titleController;
-  late DateTime _selectedDate;
+  late TextEditingController _descriptionController;
+  DateTime _selectedDate = DateTime.now();
 
   @override
   void initState() {
     super.initState();
-    tz.initializeTimeZones();
-
-    _titleController = TextEditingController(text: widget.existingTask?.title ?? '');
+    _titleController = TextEditingController(
+      text: widget.existingTask?.title ?? '',
+    );
+    _descriptionController = TextEditingController(
+      text: widget.existingTask?.description ?? '',
+    );
     _selectedDate = widget.existingTask?.dueDate ?? DateTime.now();
   }
 
   @override
   void dispose() {
     _titleController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
-  Future<void> _pickDateTime() async {
-    final DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2100),
-    );
-
-    if (pickedDate != null) {
-      final TimeOfDay? pickedTime = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.fromDateTime(_selectedDate),
+  void _submit() {
+    if (_formKey.currentState!.validate()) {
+      final newTask = Task(
+        id: widget.existingTask?.id ?? const Uuid().v4(),
+        title: _titleController.text,
+        dueDate: _selectedDate,
+        description: _descriptionController.text,
       );
-
-      if (pickedTime != null) {
-        setState(() {
-          _selectedDate = DateTime(
-            pickedDate.year,
-            pickedDate.month,
-            pickedDate.day,
-            pickedTime.hour,
-            pickedTime.minute,
-          );
-        });
-      }
+      Navigator.of(context).pop(newTask);
     }
-  }
-
-  void _saveTask() {
-    final title = _titleController.text.trim();
-
-    if (title.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a task title')),
-      );
-      return;
-    }
-
-    final task = Task(
-      id: widget.existingTask?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-      title: title,
-      dueDate: _selectedDate,
-    );
-
-    Navigator.pop(context, task);
   }
 
   @override
   Widget build(BuildContext context) {
+    final isEditing = widget.existingTask != null;
+
     return Scaffold(
-      appBar: AppBar(title: Text(widget.existingTask == null ? "Add Task" : "Edit Task")),
+      appBar: AppBar(
+        title: Text(isEditing ? 'Edit Task' : 'Add Task'),
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: 'Task Title',
-                border: OutlineInputBorder(),
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: [
+              TextFormField(
+                controller: _titleController,
+                decoration: const InputDecoration(labelText: 'Task Title'),
+                validator: (value) =>
+                    value!.isEmpty ? 'Title cannot be empty' : null,
               ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    "Due: ${DateFormat.yMMMd().add_jm().format(_selectedDate)}",
-                  ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _descriptionController,
+                decoration: const InputDecoration(labelText: 'Description'),
+                maxLines: 3,
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                title: Text(
+                  'Due Date: ${_selectedDate.toLocal().toString().split(' ')[0]}',
                 ),
-                ElevatedButton(
-                  onPressed: _pickDateTime,
-                  child: const Text("Select Date & Time"),
-                ),
-              ],
-            ),
-            const Spacer(),
-            ElevatedButton.icon(
-              onPressed: _saveTask,
-              icon: const Icon(Icons.save),
-              label: Text(widget.existingTask == null ? "Save Task" : "Update Task"),
-            ),
-          ],
+                trailing: const Icon(Icons.calendar_today),
+                onTap: () async {
+                  final pickedDate = await showDatePicker(
+                    context: context,
+                    initialDate: _selectedDate,
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2100),
+                  );
+                  if (pickedDate != null) {
+                    setState(() => _selectedDate = pickedDate);
+                  }
+                },
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _submit,
+                child: Text(isEditing ? 'Update Task' : 'Add Task'),
+              ),
+            ],
+          ),
         ),
       ),
     );

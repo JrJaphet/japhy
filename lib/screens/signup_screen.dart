@@ -4,7 +4,14 @@ import 'package:japhy_todo_app/screens/login_screen.dart';
 import 'package:japhy_todo_app/screens/home_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({super.key});
+  final void Function(bool isDark) onThemeChanged;
+  final ThemeMode currentThemeMode;
+
+  const SignUpScreen({
+    super.key,
+    required this.onThemeChanged,
+    required this.currentThemeMode,
+  });
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
@@ -32,7 +39,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
         if (user != null && mounted) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const HomeScreen()),
+            MaterialPageRoute(
+              builder: (_) => HomeScreen(
+                onThemeChanged: widget.onThemeChanged,
+                currentThemeMode: widget.currentThemeMode,
+              ),
+            ),
           );
         }
       } catch (e) {
@@ -72,7 +84,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                   const SizedBox(height: 20),
                   if (_errorMessage.isNotEmpty)
-                    Text(_errorMessage, style: const TextStyle(color: Colors.red)),
+                    Text(
+                      _errorMessage,
+                      style: const TextStyle(color: Colors.red),
+                    ),
                   const SizedBox(height: 10),
                   ElevatedButton(
                     onPressed: _isLoading ? null : _signup,
@@ -82,7 +97,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                   TextButton(
                     onPressed: () {
-                      Navigator.pop(context);
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => LoginScreen(
+                            onThemeChanged: widget.onThemeChanged,
+                            currentThemeMode: widget.currentThemeMode,
+                          ),
+                        ),
+                      );
                     },
                     child: const Text('Already have an account? Login'),
                   ),
