@@ -8,7 +8,14 @@ import '../services/notification_service.dart';
 import 'add_task_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final void Function(bool isDark) onThemeChanged;
+  final ThemeMode currentThemeMode;
+
+  const HomeScreen({
+    super.key,
+    required this.onThemeChanged,
+    required this.currentThemeMode,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -23,18 +30,27 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final taskProvider = Provider.of<TaskProvider>(context);
     final tasks = taskProvider.tasks.where((task) {
-      final matchesDate = _selectedDay == null ||
-          isSameDay(task.dueDate, _selectedDay!);
-      final matchesQuery = task.title
-          .toLowerCase()
-          .contains(_searchQuery.toLowerCase());
+      final matchesDate = _selectedDay == null || isSameDay(task.dueDate, _selectedDay!);
+      final matchesQuery = task.title.toLowerCase().contains(_searchQuery.toLowerCase());
       return matchesDate && matchesQuery;
     }).toList();
+
+    bool isDarkMode = widget.currentThemeMode == ThemeMode.dark;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text("Japhy To-Do"),
         actions: [
+          Row(
+            children: [
+              const Icon(Icons.light_mode),
+              Switch(
+                value: isDarkMode,
+                onChanged: (val) => widget.onThemeChanged(val),
+              ),
+              const Icon(Icons.dark_mode),
+            ],
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () => taskProvider.logout(context),
@@ -50,9 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 prefixIcon: Icon(Icons.search),
                 border: OutlineInputBorder(),
               ),
-              onChanged: (value) {
-                setState(() => _searchQuery = value);
-              },
+              onChanged: (value) => setState(() => _searchQuery = value),
             ),
           ),
         ),

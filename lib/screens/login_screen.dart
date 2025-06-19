@@ -4,7 +4,14 @@ import 'package:japhy_todo_app/screens/signup_screen.dart';
 import 'package:japhy_todo_app/screens/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final void Function(bool isDark) onThemeChanged;
+  final ThemeMode currentThemeMode;
+
+  const LoginScreen({
+    super.key,
+    required this.onThemeChanged,
+    required this.currentThemeMode,
+  });
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -32,7 +39,12 @@ class _LoginScreenState extends State<LoginScreen> {
         if (user != null && mounted) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const HomeScreen()),
+            MaterialPageRoute(
+              builder: (_) => HomeScreen(
+                onThemeChanged: widget.onThemeChanged,
+                currentThemeMode: widget.currentThemeMode,
+              ),
+            ),
           );
         }
       } catch (e) {
@@ -84,7 +96,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const SignUpScreen()),
+                        MaterialPageRoute(
+                          builder: (_) => SignUpScreen(
+                            onThemeChanged: widget.onThemeChanged,
+                            currentThemeMode: widget.currentThemeMode,
+                          ),
+                        ),
                       );
                     },
                     child: const Text('Don\'t have an account? Sign up'),

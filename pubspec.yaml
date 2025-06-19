@@ -1,12 +1,12 @@
 name: japhy_todo_app
 description: A Flutter To-Do app called Japhy.
 
-publish_to: 'none' # Remove this line if you plan to publish to pub.dev
+publish_to: 'none'
 
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.17.0 <3.0.0"
+  sdk: ">=2.19.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -19,6 +19,12 @@ dependencies:
   flutter_local_notifications: ^13.0.0
   intl: ^0.18.1
   timezone: ^0.9.0
+  uuid: ^4.3.1
+
+flutter_local_notifications:
+  default_os_configs:
+    linux:
+      default_package: null
 
 dev_dependencies:
   flutter_test:
