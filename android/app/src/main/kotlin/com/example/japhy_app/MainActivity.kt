@@ -1,4 +1,4 @@
-package com.example.japhy_app
+package com.example.japhy_todo_app
 
 import io.flutter.embedding.android.FlutterActivity
 

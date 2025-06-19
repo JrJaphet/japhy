@@ -2,47 +2,56 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-import '../providers/task_provider.dart';
-import '../widgets/task_tile.dart';
-import '../widgets/add_task_dialog.dart';
+import '../services/task_provider.dart';
+import '../models/task.dart';
+import '../services/notification_service.dart';
+import 'add_task_screen.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  DateTime _selectedDate = DateTime.now();
+  DateTime _focusedDay = DateTime.now();
+  DateTime? _selectedDay;
   String _searchQuery = '';
 
   @override
   Widget build(BuildContext context) {
     final taskProvider = Provider.of<TaskProvider>(context);
-    final filteredTasks = _searchQuery.isNotEmpty
-        ? taskProvider.searchTasks(_searchQuery)
-        : taskProvider.tasksForDate(_selectedDate);
+    final tasks = taskProvider.tasks.where((task) {
+      final matchesDate = _selectedDay == null ||
+          isSameDay(task.dueDate, _selectedDay!);
+      final matchesQuery = task.title
+          .toLowerCase()
+          .contains(_searchQuery.toLowerCase());
+      return matchesDate && matchesQuery;
+    }).toList();
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('To-Do App'),
+        title: const Text("Japhy To-Do"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () => taskProvider.logout(context),
+          ),
+        ],
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(56),
+          preferredSize: const Size.fromHeight(56),
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search tasks...',
-                filled: true,
-                fillColor: Colors.white,
+              decoration: const InputDecoration(
+                hintText: "Search tasks...",
                 prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                border: OutlineInputBorder(),
               ),
               onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
+                setState(() => _searchQuery = value);
               },
             ),
           ),
@@ -51,52 +60,73 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Column(
         children: [
           TableCalendar(
-            firstDay: DateTime.utc(2020, 1, 1),
-            lastDay: DateTime.utc(2100, 12, 31),
-            focusedDay: _selectedDate,
-            selectedDayPredicate: (day) => isSameDay(day, _selectedDate),
-            onDaySelected: (selectedDay, focusedDay) {
+            focusedDay: _focusedDay,
+            firstDay: DateTime(2020),
+            lastDay: DateTime(2100),
+            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+            onDaySelected: (selected, focused) {
               setState(() {
-                _selectedDate = selectedDay;
+                _selectedDay = selected;
+                _focusedDay = focused;
               });
             },
-            calendarStyle: CalendarStyle(
-              todayDecoration: BoxDecoration(
-                color: Colors.tealAccent,
-                shape: BoxShape.circle,
-              ),
-              selectedDecoration: BoxDecoration(
-                color: Colors.teal,
-                shape: BoxShape.circle,
-              ),
-            ),
           ),
           Expanded(
-            child: filteredTasks.isEmpty
-                ? Center(child: Text('No tasks found.'))
-                : ListView.builder(
-                    itemCount: filteredTasks.length,
-                    itemBuilder: (context, index) {
-                      final task = filteredTasks[index];
-                      return TaskTile(
-                        task: task,
-                        onDelete: () {
-                          taskProvider.deleteTask(task.id);
-                        },
+            child: ListView.builder(
+              itemCount: tasks.length,
+              itemBuilder: (context, index) {
+                final task = tasks[index];
+                return Dismissible(
+                  key: Key(task.id),
+                  direction: DismissDirection.endToStart,
+                  onDismissed: (_) {
+                    taskProvider.removeTask(task.id);
+                    NotificationService.cancelNotification(task.id);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Task deleted")),
+                    );
+                  },
+                  background: Container(
+                    color: Colors.red,
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: const Icon(Icons.delete, color: Colors.white),
+                  ),
+                  child: ListTile(
+                    title: Text(task.title),
+                    subtitle: Text(task.dueDate.toLocal().toString()),
+                    onTap: () async {
+                      final updatedTask = await Navigator.push<Task?>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => AddTaskScreen(existingTask: task),
+                        ),
                       );
+                      if (updatedTask != null) {
+                        taskProvider.updateTask(updatedTask);
+                        NotificationService.cancelNotification(task.id);
+                        NotificationService.scheduleTaskReminder(updatedTask);
+                      }
                     },
                   ),
+                );
+              },
+            ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (_) => AddTaskDialog(),
+        onPressed: () async {
+          final newTask = await Navigator.push<Task?>(
+            context,
+            MaterialPageRoute(builder: (_) => const AddTaskScreen()),
           );
+          if (newTask != null) {
+            taskProvider.addTask(newTask);
+            NotificationService.scheduleTaskReminder(newTask);
+          }
         },
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }

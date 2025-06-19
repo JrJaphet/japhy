@@ -1,71 +1,98 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:japhy_todo_app/services/auth_service.dart';
+import 'package:japhy_todo_app/screens/signup_screen.dart';
+import 'package:japhy_todo_app/screens/home_screen.dart';
 
-import 'signup_screen.dart';
-import 'home_screen.dart';
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
-class LoginScreen extends StatelessWidget {
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
 
-  void loginUser(BuildContext context) async {
-    final email = 'juniorlesu9@gmail.com';
-    final password = 'makavelli';
+class _LoginScreenState extends State<LoginScreen> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
+  String _errorMessage = '';
 
-    if (email.isEmpty || password.isEmpty) {
-      Fluttertoast.showToast(msg: "Please fill in all fields");
-      return;
-    }
+  Future<void> _login() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = '';
+      });
 
-    try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => HomeScreen()),
-      );
-    } catch (e) {
-      Fluttertoast.showToast(msg: e.toString());
+      try {
+        final user = await AuthService().signIn(
+          _emailController.text.trim(),
+          _passwordController.text.trim(),
+        );
+        if (user != null && mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
+          );
+        }
+      } catch (e) {
+        setState(() => _errorMessage = 'Login failed: ${e.toString()}');
+      } finally {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Login")),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: emailController,
-              decoration: InputDecoration(labelText: "Email"),
-              keyboardType: TextInputType.emailAddress,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  const Icon(Icons.lock, size: 80, color: Colors.indigo),
+                  const SizedBox(height: 20),
+                  TextFormField(
+                    controller: _emailController,
+                    decoration: const InputDecoration(labelText: 'Email'),
+                    validator: (value) =>
+                        value!.isEmpty ? 'Enter your email' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _passwordController,
+                    decoration: const InputDecoration(labelText: 'Password'),
+                    obscureText: true,
+                    validator: (value) =>
+                        value!.length < 6 ? 'Minimum 6 characters' : null,
+                  ),
+                  const SizedBox(height: 20),
+                  if (_errorMessage.isNotEmpty)
+                    Text(_errorMessage, style: const TextStyle(color: Colors.red)),
+                  const SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: _isLoading ? null : _login,
+                    child: _isLoading
+                        ? const CircularProgressIndicator()
+                        : const Text('Login'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const SignUpScreen()),
+                      );
+                    },
+                    child: const Text('Don\'t have an account? Sign up'),
+                  ),
+                ],
+              ),
             ),
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: InputDecoration(labelText: "Password"),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => loginUser(context),
-              child: Text("Login"),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => SignupScreen()),
-                );
-              },
-              child: Text("Don't have an account? Sign up"),
-            )
-          ],
+          ),
         ),
       ),
     );
