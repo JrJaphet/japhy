@@ -1,35 +1,78 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/task.dart';
 
 class TaskProvider with ChangeNotifier {
   final List<Task> _tasks = [];
+  final _tasksCollection = FirebaseFirestore.instance.collection('tasks');
 
   List<Task> get tasks => [..._tasks];
 
-  // Add a task
-  void addTask(Task task) {
+  // Fetch tasks from Firestore on app startup
+  Future<void> fetchTasksFromFirestore() async {
+    final snapshot = await _tasksCollection.get();
+    _tasks.clear();
+    _tasks.addAll(snapshot.docs.map((doc) => Task.fromMap(doc.data())));
+    notifyListeners();
+  }
+
+  // Add a task locally and in Firestore
+  Future<void> addTask(Task task) async {
     _tasks.add(task);
     notifyListeners();
+    await _tasksCollection.doc(task.id).set(task.toMap());
   }
 
-  // Remove a task by ID
-  void removeTask(String id) {
+  // Remove a task locally and in Firestore
+  Future<void> removeTask(String id) async {
     _tasks.removeWhere((task) => task.id == id);
     notifyListeners();
+    await _tasksCollection.doc(id).delete();
   }
 
-  // Update a task
-  void updateTask(Task updatedTask) {
+  // Update a task locally and in Firestore
+  Future<void> updateTask(Task updatedTask) async {
     final index = _tasks.indexWhere((task) => task.id == updatedTask.id);
     if (index != -1) {
       _tasks[index] = updatedTask;
       notifyListeners();
+      await _tasksCollection.doc(updatedTask.id).update(updatedTask.toMap());
     }
   }
 
-  // Reorder tasks in the list
+  // Complete a task: update due date if recurring, delete if not
+  Future<void> completeTask(Task task) async {
+    if (task.isRecurring) {
+      DateTime newDueDate;
+
+      switch (task.recurrenceRule) {
+        case 'daily':
+          newDueDate = task.dueDate.add(Duration(days: task.recurrenceInterval));
+          break;
+        case 'weekly':
+          newDueDate = task.dueDate.add(Duration(days: 7 * task.recurrenceInterval));
+          break;
+        case 'monthly':
+          newDueDate = DateTime(
+            task.dueDate.year,
+            task.dueDate.month + task.recurrenceInterval,
+            task.dueDate.day,
+          );
+          break;
+        default:
+          newDueDate = task.dueDate;
+      }
+
+      final updatedTask = task.copyWith(dueDate: newDueDate);
+      await updateTask(updatedTask);
+    } else {
+      await removeTask(task.id);
+    }
+  }
+
+  // Reorder tasks in the list locally
   void reorderTasks(int oldIndex, int newIndex) {
     if (newIndex > oldIndex) newIndex -= 1;
     final task = _tasks.removeAt(oldIndex);
@@ -56,15 +99,15 @@ class TaskProvider with ChangeNotifier {
     String? keyword,
   }) {
     return _tasks.where((task) {
-      final matchesDate = date == null || 
-        (task.dueDate.year == date.year &&
-         task.dueDate.month == date.month &&
-         task.dueDate.day == date.day);
-      
+      final matchesDate = date == null ||
+          (task.dueDate.year == date.year &&
+           task.dueDate.month == date.month &&
+           task.dueDate.day == date.day);
+
       final matchesPriority = priority == null || task.priority == priority;
 
-      final matchesTags = tags == null || tags.isEmpty || 
-        (task.tags != null && tags.every((tag) => task.tags!.contains(tag)));
+      final matchesTags = tags == null || tags.isEmpty ||
+          (task.tags != null && tags.every((tag) => task.tags!.contains(tag)));
 
       final matchesKeyword = keyword == null || keyword.isEmpty || searchTasks(keyword).contains(task);
 
@@ -72,7 +115,7 @@ class TaskProvider with ChangeNotifier {
     }).toList();
   }
 
-  // Logout and redirect to login screen
+  // Logout user and redirect to login screen
   Future<void> logout(BuildContext context) async {
     await FirebaseAuth.instance.signOut();
     Navigator.of(context).pushReplacementNamed('/login');

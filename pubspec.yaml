@@ -16,6 +16,7 @@ dependencies:
   table_calendar: ^3.0.9
   firebase_core: ^2.10.0
   firebase_auth: ^4.4.0
+  cloud_firestore: ^4.15.0
   flutter_local_notifications: ^13.0.0
   intl: ^0.18.1
   timezone: ^0.9.0

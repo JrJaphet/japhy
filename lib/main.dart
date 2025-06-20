@@ -13,8 +13,8 @@ import 'services/notification_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  tz.initializeTimeZones();
-  await NotificationService.initialize();
+  tz.initializeTimeZones(); // Required for local notifications
+  await NotificationService.initialize(); // Local notifications setup
 
   runApp(const MyApp());
 }
