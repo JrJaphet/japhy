@@ -23,6 +23,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   String _errorMessage = '';
+  late bool _isDarkMode;
+
+  @override
+  void initState() {
+    super.initState();
+    _isDarkMode = widget.currentThemeMode == ThemeMode.dark;
+  }
 
   Future<void> _signup() async {
     if (_formKey.currentState!.validate()) {
@@ -58,6 +65,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Sign Up"),
+        actions: [
+          Row(
+            children: [
+              const Icon(Icons.light_mode),
+              Switch(
+                value: _isDarkMode,
+                onChanged: (val) {
+                  setState(() => _isDarkMode = val);
+                  widget.onThemeChanged(val);
+                },
+              ),
+              const Icon(Icons.dark_mode),
+            ],
+          ),
+        ],
+      ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),

@@ -23,6 +23,13 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   String _errorMessage = '';
+  late bool _isDarkMode;
+
+  @override
+  void initState() {
+    super.initState();
+    _isDarkMode = widget.currentThemeMode == ThemeMode.dark;
+  }
 
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
@@ -58,6 +65,24 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Login"),
+        actions: [
+          Row(
+            children: [
+              const Icon(Icons.light_mode),
+              Switch(
+                value: _isDarkMode,
+                onChanged: (val) {
+                  setState(() => _isDarkMode = val);
+                  widget.onThemeChanged(val);
+                },
+              ),
+              const Icon(Icons.dark_mode),
+            ],
+          ),
+        ],
+      ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),

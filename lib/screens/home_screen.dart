@@ -25,6 +25,13 @@ class _HomeScreenState extends State<HomeScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   String _searchQuery = '';
+  bool _isDarkMode = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isDarkMode = widget.currentThemeMode == ThemeMode.dark;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,8 +42,6 @@ class _HomeScreenState extends State<HomeScreen> {
       return matchesDate && matchesQuery;
     }).toList();
 
-    bool isDarkMode = widget.currentThemeMode == ThemeMode.dark;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text("Japhy To-Do"),
@@ -45,8 +50,13 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               const Icon(Icons.light_mode),
               Switch(
-                value: isDarkMode,
-                onChanged: (val) => widget.onThemeChanged(val),
+                value: _isDarkMode,
+                onChanged: (val) {
+                  setState(() {
+                    _isDarkMode = val;
+                  });
+                  widget.onThemeChanged(val);
+                },
               ),
               const Icon(Icons.dark_mode),
             ],
