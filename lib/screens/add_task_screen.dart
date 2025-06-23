@@ -16,7 +16,8 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
-  DateTime _selectedDate = DateTime.now();
+  late DateTime _selectedDate;
+  late TimeOfDay _selectedTime;
 
   bool _isRecurring = false;
   String _recurrenceRule = 'daily';
@@ -28,6 +29,11 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     _titleController = TextEditingController(text: widget.existingTask?.title ?? '');
     _descriptionController = TextEditingController(text: widget.existingTask?.description ?? '');
     _selectedDate = widget.existingTask?.dueDate ?? DateTime.now();
+
+    final existingDueDate = widget.existingTask?.dueDate;
+    _selectedTime = existingDueDate != null
+        ? TimeOfDay(hour: existingDueDate.hour, minute: existingDueDate.minute)
+        : TimeOfDay.now();
 
     if (widget.existingTask != null) {
       _isRecurring = widget.existingTask!.isRecurring;
@@ -47,10 +53,18 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
   void _submit() async {
     if (_formKey.currentState!.validate()) {
+      final combinedDateTime = DateTime(
+        _selectedDate.year,
+        _selectedDate.month,
+        _selectedDate.day,
+        _selectedTime.hour,
+        _selectedTime.minute,
+      );
+
       final newTask = Task(
         id: widget.existingTask?.id ?? const Uuid().v4(),
         title: _titleController.text.trim(),
-        dueDate: _selectedDate,
+        dueDate: combinedDateTime,
         description: _descriptionController.text.trim(),
         isRecurring: _isRecurring,
         recurrenceRule: _isRecurring ? _recurrenceRule : '',
@@ -107,6 +121,19 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   );
                   if (pickedDate != null) {
                     setState(() => _selectedDate = pickedDate);
+                  }
+                },
+              ),
+              ListTile(
+                title: Text('Due Time: ${_selectedTime.format(context)}'),
+                trailing: const Icon(Icons.access_time),
+                onTap: () async {
+                  final pickedTime = await showTimePicker(
+                    context: context,
+                    initialTime: _selectedTime,
+                  );
+                  if (pickedTime != null) {
+                    setState(() => _selectedTime = pickedTime);
                   }
                 },
               ),
