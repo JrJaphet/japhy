@@ -11,21 +11,26 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+
+  # UI
   cupertino_icons: ^1.0.2
-  provider: ^6.0.5
   table_calendar: ^3.0.9
+  provider: ^6.0.5
+
+  # Firebase
   firebase_core: ^3.14.0
   firebase_auth: ^5.6.0
   cloud_firestore: ^5.6.9
-  flutter_local_notifications: ^19.3.0
+  firebase_storage: ^12.1.0
+
+  # Utilities
+  image_picker: ^1.0.7
+  uuid: ^4.3.1
   intl: ^0.20.2
   timezone: ^0.10.1
-  uuid: ^4.3.1
 
-flutter_local_notifications:
-  default_os_configs:
-    linux:
-      default_package: null
+  # Notifications
+  flutter_local_notifications: ^19.3.0
 
 dev_dependencies:
   flutter_test:
@@ -34,3 +39,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/images/

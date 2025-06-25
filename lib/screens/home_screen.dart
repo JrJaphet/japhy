@@ -8,6 +8,8 @@ import '../services/task_provider.dart';
 import '../models/task.dart';
 import '../services/notification_service.dart';
 import 'add_task_screen.dart';
+import 'profile_screen.dart';
+import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final void Function(bool isDark) onThemeChanged;
@@ -88,10 +90,6 @@ class _HomeScreenState extends State<HomeScreen> {
               const Icon(Icons.dark_mode),
             ],
           ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => taskProvider.logout(context),
-          ),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),
@@ -108,9 +106,68 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
+
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(color: Colors.blue),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const CircleAvatar(
+                    radius: 30,
+                    backgroundImage: AssetImage('assets/images/profile.png'),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text('User Name', style: TextStyle(color: Colors.white, fontSize: 18)),
+                  const Text('user@example.com', style: TextStyle(color: Colors.white70)),
+                ],
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text('Profile'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Settings'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SettingsScreen(
+                      onThemeChanged: widget.onThemeChanged,
+                      currentThemeMode: widget.currentThemeMode,
+                    ),
+                  ),
+                );
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text('Logout'),
+              onTap: () {
+                Navigator.pop(context);
+                taskProvider.logout(context);
+              },
+            ),
+          ],
+        ),
+      ),
+
       body: Stack(
         children: [
-          // Japhy big background text:
           Center(
             child: Text(
               'Japhy',
@@ -128,8 +185,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-
-          // Your actual content on top:
           Column(
             children: [
               TableCalendar(
@@ -198,6 +253,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final newTask = await Navigator.push<Task?>(

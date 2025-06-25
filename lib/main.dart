@@ -7,14 +7,16 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'firebase_options.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/profile_screen.dart';
+import 'screens/settings_screen.dart';
 import 'services/task_provider.dart';
 import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  tz.initializeTimeZones(); // Required for local notifications
-  await NotificationService.initialize(); // Local notifications setup
+  tz.initializeTimeZones();
+  await NotificationService.initialize();
 
   runApp(const MyApp());
 }
@@ -57,6 +59,13 @@ class _MyAppState extends State<MyApp> {
           onThemeChanged: _toggleTheme,
           currentThemeMode: _themeMode,
         ),
+        routes: {
+          '/profile': (_) => const ProfileScreen(),
+          '/settings': (_) => SettingsScreen(
+            onThemeChanged: _toggleTheme,
+            currentThemeMode: _themeMode,
+          ),
+        },
       ),
     );
   }
