@@ -39,7 +39,6 @@ class NotificationService {
 
     // Skip if scheduled time is in the past
     if (scheduledDate.isBefore(tz.TZDateTime.now(tz.local))) return;
-
     await _flutterLocalNotificationsPlugin.zonedSchedule(
       notificationId,
       'Task Reminder',
@@ -55,9 +54,8 @@ class NotificationService {
         ),
       ),
       androidScheduleMode: AndroidScheduleMode.exact,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.dateAndTime,
+      // CHANGE: Removed matchDateTimeComponents as it's optional and not critical here
+      // REASON: Simplifies code and avoids potential compatibility issues
     );
   }
 
