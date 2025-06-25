@@ -4,7 +4,14 @@ import 'package:japhy_todo_app/screens/login_screen.dart';
 import 'package:japhy_todo_app/screens/home_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({super.key});
+  final void Function(bool isDark) onThemeChanged;
+  final ThemeMode currentThemeMode;
+
+  const SignUpScreen({
+    super.key,
+    required this.onThemeChanged,
+    required this.currentThemeMode,
+  });
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
@@ -16,6 +23,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   String _errorMessage = '';
+  late bool _isDarkMode;
+
+  @override
+  void initState() {
+    super.initState();
+    _isDarkMode = widget.currentThemeMode == ThemeMode.dark;
+  }
 
   Future<void> _signup() async {
     if (_formKey.currentState!.validate()) {
@@ -32,7 +46,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
         if (user != null && mounted) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const HomeScreen()),
+            MaterialPageRoute(
+              builder: (_) => HomeScreen(
+                onThemeChanged: widget.onThemeChanged,
+                currentThemeMode: widget.currentThemeMode,
+              ),
+            ),
           );
         }
       } catch (e) {
@@ -46,6 +65,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Sign Up"),
+        actions: [
+          Row(
+            children: [
+              const Icon(Icons.light_mode),
+              Switch(
+                value: _isDarkMode,
+                onChanged: (val) {
+                  setState(() => _isDarkMode = val);
+                  widget.onThemeChanged(val);
+                },
+              ),
+              const Icon(Icons.dark_mode),
+            ],
+          ),
+        ],
+      ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -72,7 +109,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                   const SizedBox(height: 20),
                   if (_errorMessage.isNotEmpty)
-                    Text(_errorMessage, style: const TextStyle(color: Colors.red)),
+                    Text(
+                      _errorMessage,
+                      style: const TextStyle(color: Colors.red),
+                    ),
                   const SizedBox(height: 10),
                   ElevatedButton(
                     onPressed: _isLoading ? null : _signup,
@@ -82,7 +122,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                   TextButton(
                     onPressed: () {
-                      Navigator.pop(context);
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => LoginScreen(
+                            onThemeChanged: widget.onThemeChanged,
+                            currentThemeMode: widget.currentThemeMode,
+                          ),
+                        ),
+                      );
                     },
                     child: const Text('Already have an account? Login'),
                   ),

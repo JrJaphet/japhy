@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:japhy_todo_app/models/task.dart';
 import 'package:provider/provider.dart';
 import '../providers/task_provider.dart';
 
@@ -15,7 +16,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
     if (_controller.text.isEmpty) return;
 
     Provider.of<TaskProvider>(context, listen: false)
-        .addTask(_controller.text, _selectedDate);
+        .addTask(_controller.text as Task, _selectedDate);
 
     Navigator.of(context).pop(); // Close the dialog
   }

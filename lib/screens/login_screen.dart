@@ -4,7 +4,14 @@ import 'package:japhy_todo_app/screens/signup_screen.dart';
 import 'package:japhy_todo_app/screens/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final void Function(bool isDark) onThemeChanged;
+  final ThemeMode currentThemeMode;
+
+  const LoginScreen({
+    super.key,
+    required this.onThemeChanged,
+    required this.currentThemeMode,
+  });
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -16,6 +23,13 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   String _errorMessage = '';
+  late bool _isDarkMode;
+
+  @override
+  void initState() {
+    super.initState();
+    _isDarkMode = widget.currentThemeMode == ThemeMode.dark;
+  }
 
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
@@ -32,7 +46,12 @@ class _LoginScreenState extends State<LoginScreen> {
         if (user != null && mounted) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const HomeScreen()),
+            MaterialPageRoute(
+              builder: (_) => HomeScreen(
+                onThemeChanged: widget.onThemeChanged,
+                currentThemeMode: widget.currentThemeMode,
+              ),
+            ),
           );
         }
       } catch (e) {
@@ -46,6 +65,24 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Login"),
+        actions: [
+          Row(
+            children: [
+              const Icon(Icons.light_mode),
+              Switch(
+                value: _isDarkMode,
+                onChanged: (val) {
+                  setState(() => _isDarkMode = val);
+                  widget.onThemeChanged(val);
+                },
+              ),
+              const Icon(Icons.dark_mode),
+            ],
+          ),
+        ],
+      ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -84,7 +121,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const SignUpScreen()),
+                        MaterialPageRoute(
+                          builder: (_) => SignUpScreen(
+                            onThemeChanged: widget.onThemeChanged,
+                            currentThemeMode: widget.currentThemeMode,
+                          ),
+                        ),
                       );
                     },
                     child: const Text('Don\'t have an account? Sign up'),

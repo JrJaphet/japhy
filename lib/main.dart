@@ -13,14 +13,27 @@ import 'services/notification_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  tz.initializeTimeZones();
-  await NotificationService.initialize();
+  tz.initializeTimeZones(); // Required for local notifications
+  await NotificationService.initialize(); // Local notifications setup
 
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  ThemeMode _themeMode = ThemeMode.system;
+
+  void _toggleTheme(bool isDark) {
+    setState(() {
+      _themeMode = isDark ? ThemeMode.dark : ThemeMode.light;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,17 +42,35 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Japhy To-Do',
         debugShowCheckedModeBanner: false,
+        themeMode: _themeMode,
         theme: ThemeData(
+          brightness: Brightness.light,
           primarySwatch: Colors.deepPurple,
+          useMaterial3: true,
         ),
-        home: const AuthWrapper(),
+        darkTheme: ThemeData(
+          brightness: Brightness.dark,
+          primarySwatch: Colors.deepPurple,
+          useMaterial3: true,
+        ),
+        home: AuthWrapper(
+          onThemeChanged: _toggleTheme,
+          currentThemeMode: _themeMode,
+        ),
       ),
     );
   }
 }
 
 class AuthWrapper extends StatelessWidget {
-  const AuthWrapper({super.key});
+  final void Function(bool isDark) onThemeChanged;
+  final ThemeMode currentThemeMode;
+
+  const AuthWrapper({
+    super.key,
+    required this.onThemeChanged,
+    required this.currentThemeMode,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -51,9 +82,15 @@ class AuthWrapper extends StatelessWidget {
             body: Center(child: CircularProgressIndicator()),
           );
         } else if (snapshot.hasData) {
-          return const HomeScreen();
+          return HomeScreen(
+            onThemeChanged: onThemeChanged,
+            currentThemeMode: currentThemeMode,
+          );
         } else {
-          return const LoginScreen();
+          return LoginScreen(
+            onThemeChanged: onThemeChanged,
+            currentThemeMode: currentThemeMode,
+          );
         }
       },
     );
