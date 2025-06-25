@@ -12,7 +12,7 @@ class TaskProvider with ChangeNotifier {
   List<Task> get tasks => [..._tasks];
 
   // Add a task locally and in Firestore
-  Future<void> addTask(Task task) async {
+  Future<void> addTask(Task task, DateTime selectedDate) async {
     _tasks.add(task);
     notifyListeners();
     await _tasksCollection.doc(task.id).set(task.toMap());
