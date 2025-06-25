@@ -63,6 +63,8 @@ class Task {
     );
   }
 
+  get date => null;
+
   // Convert Task instance to Firestore map
   Map<String, dynamic> toMap() {
     return {
