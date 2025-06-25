@@ -5,7 +5,7 @@ class TaskTile extends StatelessWidget {
   final Task task;
   final VoidCallback onDelete;
 
-  const TaskTile({required this.task, required this.onDelete});
+  const TaskTile({super.key, required this.task, required this.onDelete});
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +13,7 @@ class TaskTile extends StatelessWidget {
       title: Text(task.title),
       subtitle: Text('${task.date.toLocal()}'.split(' ')[0]),
       trailing: IconButton(
-        icon: Icon(Icons.delete, color: Colors.red),
+        icon: const Icon(Icons.delete, color: Colors.red),
         onPressed: onDelete,
       ),
     );
