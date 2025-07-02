@@ -12,7 +12,12 @@
           "package_name": "com.example.japhy"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "300397427222-oinbasgbtb85rlgr9re7j7ksjf75d704.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDyv9aYpTz6PjqwO4TsgidifWA1R1PdKEY"
@@ -20,7 +25,55 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "300397427222-oinbasgbtb85rlgr9re7j7ksjf75d704.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "300397427222-oqrqb2ln9art746d01u63p1211srgebn.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.japhy"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:300397427222:android:17bedb5888308761e61337",
+        "android_client_info": {
+          "package_name": "com.example.japhy_todo_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "300397427222-oinbasgbtb85rlgr9re7j7ksjf75d704.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDyv9aYpTz6PjqwO4TsgidifWA1R1PdKEY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "300397427222-oinbasgbtb85rlgr9re7j7ksjf75d704.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "300397427222-oqrqb2ln9art746d01u63p1211srgebn.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.japhy"
+              }
+            }
+          ]
         }
       }
     },
@@ -31,7 +84,12 @@
           "package_name": "com.jr.japhy"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "300397427222-oinbasgbtb85rlgr9re7j7ksjf75d704.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDyv9aYpTz6PjqwO4TsgidifWA1R1PdKEY"
@@ -39,7 +97,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "300397427222-oinbasgbtb85rlgr9re7j7ksjf75d704.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "300397427222-oqrqb2ln9art746d01u63p1211srgebn.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.japhy"
+              }
+            }
+          ]
         }
       }
     }

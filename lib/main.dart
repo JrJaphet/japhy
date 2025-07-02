@@ -15,8 +15,13 @@ import 'services/notification_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  tz.initializeTimeZones();
-  await NotificationService.initialize();
+
+  try {
+    tz.initializeTimeZones();
+    await NotificationService.initialize();
+  } catch (e, st) {
+    print('Error during initialization: $e\n$st');
+  }
 
   runApp(const MyApp());
 }

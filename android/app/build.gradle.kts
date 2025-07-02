@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.japhy" // ✅ Replace if needed
+    namespace = "com.example.japhy"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
 
@@ -21,8 +21,8 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.japhy" // ✅ Replace with your actual app ID
-        minSdk = 23 // ✅ REQUIRED for firebase-auth >= 23.2.0
+        applicationId = "com.example.japhy"
+        minSdk = 23 // Required for Firebase Auth v23+
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

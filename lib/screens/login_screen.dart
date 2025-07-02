@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:japhy_todo_app/services/auth_service.dart';
-import 'package:japhy_todo_app/screens/signup_screen.dart';
-import 'package:japhy_todo_app/screens/home_screen.dart';
+import 'package:flutter_signin_button/flutter_signin_button.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+
+import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   final void Function(bool isDark) onThemeChanged;
@@ -20,123 +22,104 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-  bool _isLoading = false;
-  String _errorMessage = '';
-  late bool _isDarkMode;
+  bool _loading = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _isDarkMode = widget.currentThemeMode == ThemeMode.dark;
+  Future<void> _signInWithEmail() async {
+    try {
+      setState(() => _loading = true);
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? 'Login failed')),
+      );
+    } finally {
+      setState(() => _loading = false);
+    }
   }
 
-  Future<void> _login() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-        _errorMessage = '';
-      });
+  Future<void> _signInWithGoogle() async {
+    try {
+      setState(() => _loading = true);
 
-      try {
-        final user = await AuthService().signIn(
-          _emailController.text.trim(),
-          _passwordController.text.trim(),
-        );
-        if (user != null && mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) => HomeScreen(
-                onThemeChanged: widget.onThemeChanged,
-                currentThemeMode: widget.currentThemeMode,
-              ),
-            ),
-          );
-        }
-      } catch (e) {
-        setState(() => _errorMessage = 'Login failed: ${e.toString()}');
-      } finally {
-        setState(() => _isLoading = false);
-      }
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) return;
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      await FirebaseAuth.instance.signInWithCredential(credential);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Google Sign-In failed: $e')),
+      );
+    } finally {
+      setState(() => _loading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Login"),
-        actions: [
-          Row(
-            children: [
-              const Icon(Icons.light_mode),
-              Switch(
-                value: _isDarkMode,
-                onChanged: (val) {
-                  setState(() => _isDarkMode = val);
-                  widget.onThemeChanged(val);
-                },
-              ),
-              const Icon(Icons.dark_mode),
-            ],
-          ),
-        ],
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: SingleChildScrollView(
-            child: Form(
-              key: _formKey,
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(24.0),
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.lock, size: 80, color: Colors.indigo),
-                  const SizedBox(height: 20),
-                  TextFormField(
+                  Text(
+                    'Welcome to Japhy',
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 32),
+                  TextField(
                     controller: _emailController,
-                    decoration: const InputDecoration(labelText: 'Email'),
-                    validator: (value) =>
-                        value!.isEmpty ? 'Enter your email' : null,
+                    decoration: const InputDecoration(
+                      labelText: 'Email',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _passwordController,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Password',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: _signInWithEmail,
+                    child: const Text('Sign in with Email'),
                   ),
                   const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _passwordController,
-                    decoration: const InputDecoration(labelText: 'Password'),
-                    obscureText: true,
-                    validator: (value) =>
-                        value!.length < 6 ? 'Minimum 6 characters' : null,
+                  const Text('OR'),
+                  const SizedBox(height: 12),
+                  SignInButton(
+                    Buttons.Google,
+                    onPressed: _signInWithGoogle,
                   ),
                   const SizedBox(height: 20),
-                  if (_errorMessage.isNotEmpty)
-                    Text(_errorMessage, style: const TextStyle(color: Colors.red)),
-                  const SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: _isLoading ? null : _login,
-                    child: _isLoading
-                        ? const CircularProgressIndicator()
-                        : const Text('Login'),
-                  ),
                   TextButton(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => SignUpScreen(
-                            onThemeChanged: widget.onThemeChanged,
-                            currentThemeMode: widget.currentThemeMode,
-                          ),
-                        ),
+                      widget.onThemeChanged(
+                        widget.currentThemeMode == ThemeMode.dark,
                       );
                     },
-                    child: const Text('Don\'t have an account? Sign up'),
+                    child: const Text('Toggle Theme'),
                   ),
                 ],
               ),
             ),
-          ),
-        ),
-      ),
     );
   }
 }

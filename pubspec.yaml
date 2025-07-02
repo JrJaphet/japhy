@@ -28,9 +28,13 @@ dependencies:
   uuid: ^4.3.1
   intl: ^0.20.2
   timezone: ^0.10.1
+  google_sign_in: ^6.2.1
 
   # Notifications
   flutter_local_notifications: ^19.3.0
+
+  # ✅ Google sign-in styled buttons
+  flutter_signin_button: ^2.0.0
 
 dev_dependencies:
   flutter_test:
